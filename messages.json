@@ -1,0 +1,14 @@
+{
+  "ebenezer_session_1": [
+    {
+      "type": "human",
+      "content": "what is  a piano?",
+      "timestamp": "2025-10-04T23:01:38.778006"
+    },
+    {
+      "type": "ai",
+      "content": "A piano is a musical instrument that produces sound by striking strings with hammers when keys are pressed. It is a versatile instrument that is widely used in various genres of music, ranging from classical to jazz to pop. The piano has a keyboard layout with white and black keys that represent different musical notes. It is known for its dynamic range and ability to play both melody and harmony simultaneously. In addition to acoustic pianos, there are also electronic keyboards and digital pianos that replicate the sound and feel of a traditional piano.",
+      "timestamp": "2025-10-04T23:01:38.778041"
+    }
+  ]
+}
