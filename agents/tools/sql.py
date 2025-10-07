@@ -6,6 +6,12 @@ from langchain_openai import ChatOpenAI
 import sqlite3
 import os
 from dotenv import load_dotenv
+from agents.tools.report import report_tool  # ✅ From project root
+
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
+
 
 load_dotenv()
 
@@ -75,7 +81,7 @@ def run_sqlite_query(query: str) -> str:
         return f"Error executing query: {str(e)}"
 
 # Setup the agent with database schema in system prompt
-tools = [run_sqlite_query]
+tools = [run_sqlite_query, report_tool]
 
 prompt = ChatPromptTemplate.from_messages([
     ("system", f"""You are a helpful database assistant. You can execute SQL queries using the run_sqlite_query tool.
@@ -102,7 +108,9 @@ Common queries:
 ])
 
 llm = ChatOpenAI(model="gpt-4", temperature=0)
+
 agent = create_openai_functions_agent(llm=llm, tools=tools, prompt=prompt)
+
 agent_executor = AgentExecutor(
     agent=agent,
     tools=tools,
@@ -110,15 +118,39 @@ agent_executor = AgentExecutor(
     handle_parsing_errors=True
 )
 
-# Run the query to count users
+# Store sessions (you can later extend this to multiple users)
+store = {}
+
+def get_session_history(session_id: str) -> BaseChatMessageHistory:
+    """Retrieve or create chat history for a given session."""
+    if session_id not in store:
+        store[session_id] = ChatMessageHistory()  # ✅ Changed this
+    return store[session_id]
+
+# Wrap your existing agent executor with message history
+agent_with_memory = RunnableWithMessageHistory(
+    agent_executor,
+    get_session_history,
+    input_messages_key="input",   # maps to your {input} variable
+    history_messages_key="chat_history",  # maps to MessagesPlaceholder in your prompt
+)
+
 if __name__ == "__main__":
     print("="*60)
     print("COUNTING USERS WITH SHIPPING ADDRESS")
     print("="*60 + "\n")
-    
-    response = agent_executor.invoke({
-        "input": "How many users have provided a shipping address?"
-    })
+
+    session_id = "session_1"
+
+    response = agent_with_memory.invoke(
+        {"input": "How many orders are there? Write the result to an HTML report"},
+        config={"configurable": {"session_id": session_id}}
+    )
+
+    response = agent_with_memory.invoke(
+        {"input": "Repeat the exact same process for users"},
+        config={"configurable": {"session_id": session_id}}
+    )
     
     print("\n" + "="*60)
     print("ANSWER:")
