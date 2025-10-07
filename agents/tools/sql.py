@@ -12,6 +12,8 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 
+from agents.handlers.chat_model_start_handler import ChatModelStartHandler
+
 
 load_dotenv()
 
@@ -107,14 +109,17 @@ Common queries:
     MessagesPlaceholder(variable_name="agent_scratchpad")
 ])
 
-llm = ChatOpenAI(model="gpt-4", temperature=0)
+
+handler = ChatModelStartHandler()
+
+llm = ChatOpenAI(model="gpt-4", temperature=0, callbacks=[handler])
 
 agent = create_openai_functions_agent(llm=llm, tools=tools, prompt=prompt)
 
 agent_executor = AgentExecutor(
     agent=agent,
     tools=tools,
-    verbose=True,
+    # verbose=True,
     handle_parsing_errors=True
 )
 
