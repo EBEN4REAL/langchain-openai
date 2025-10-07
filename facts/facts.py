@@ -3,7 +3,10 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
+import langchain
 import os
+
+langchain.debug = True  # Enable debug mode for more detailed logs
 
 load_dotenv()
 
